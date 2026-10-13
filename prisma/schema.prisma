@@ -1,0 +1,156 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  admin
+  buyer
+}
+
+enum OrderStatus {
+  pending
+  paid
+  shipped
+  delivered
+  cancelled
+}
+
+model User {
+  id                 String   @id @default(cuid())
+  email              String   @unique
+  name               String
+  passwordHash       String
+  role               Role     @default(buyer)
+  mustChangePassword Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  orders Order[]
+  posts  Post[] 
+  @@index([email])
+}
+
+
+
+model Category {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  slug      String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
+}
+
+model Product {
+  id             String    @id @default(uuid())
+  sku            String    @unique
+  barcode        String?   @unique
+  name           String
+  slug           String    @unique
+  description    String?
+  collection     String
+  categoryId     String?
+  category       Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  unit           String    @default("ea")
+
+  spKes          Int       @default(0)
+  spUsd          Int       @default(0)
+  salePriceKes   Int?
+  salePriceUsd   Int?
+
+  bp             Int       @default(0)
+  taxRate        Int       @default(0)
+
+  quantity       Int       @default(0)
+  reorderLevel   Int       @default(0)
+  isTracked      Boolean   @default(true)
+
+  isActive       Boolean   @default(true)
+  isBestSeller   Boolean   @default(false)
+  isOnOffer      Boolean   @default(false)
+  isFeatured     Boolean   @default(false)
+
+  fragranceNotes String?
+  imageUrl       String?
+  internalNotes  String?
+
+  timeSold       DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  orderItems     OrderItem[]
+
+  @@index([collection])
+  @@index([isActive, isBestSeller])
+  @@index([isActive, isOnOffer])
+  @@index([createdAt])
+}
+
+model CollectionMeta {
+  slug        String @id
+  name        String
+  tagline     String
+  description String
+  image       String
+  href        String
+}
+
+model Order {
+  id         String      @id @default(uuid())
+  userId     String
+  user       User        @relation(fields: [userId], references: [id])
+  status     OrderStatus @default(pending)
+  currency   String      @default("KES")
+  total      Int
+  items      OrderItem[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  paymentMethod          String   @default("stripe")
+  mpesaCheckoutRequestId String?
+  mpesaReceipt           String?
+  failureReason          String?
+
+  @@index([userId, createdAt])
+}
+
+model OrderItem {
+  id         String  @id @default(uuid())
+  orderId    String
+  order      Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product @relation(fields: [productId], references: [id])
+  quantity   Int
+  unitPrice  Int
+
+  @@index([orderId])
+}
+
+model NewsletterSubscriber {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
+
+model Post {
+  id           String    @id @default(uuid())
+  slug         String    @unique
+  title        String
+  excerpt      String
+  content      String
+  coverImage   String?
+  published    Boolean   @default(false)
+  publishedAt  DateTime?
+  authorId     String
+  author       User      @relation(fields: [authorId], references: [id])
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([published, publishedAt])
+  @@index([slug])
+}
+
