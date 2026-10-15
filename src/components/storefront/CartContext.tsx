@@ -92,7 +92,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
       return [...prev, { productId, quantity: Math.min(MAX_QTY, qty) }];
     });
-    setIsOpen(true);
   }, []);
 
   const remove = useCallback((productId: string) => {

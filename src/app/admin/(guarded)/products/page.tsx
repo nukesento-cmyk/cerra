@@ -215,6 +215,9 @@ export default function AdminProductsPage() {
                   Selling price
                 </TableHead>
                 <TableHead className="text-gray-300 text-right">Qty</TableHead>
+                <TableHead className="text-gray-300 text-right">
+                  Revenue
+                </TableHead>
                 <TableHead className="text-gray-300 text-right">Flags</TableHead>
                 <TableHead className="text-gray-300 text-right">
                   Status
@@ -287,6 +290,27 @@ export default function AdminProductsPage() {
                       }`}
                     >
                       {p.quantity}
+                    </TableCell>
+                    <TableCell className="text-right whitespace-nowrap text-xs">
+                      {p.revenue && (p.revenue.usd > 0 || p.revenue.kes > 0) ? (
+                        <>
+                          <p className="text-gray-300">
+                            {p.revenue.units} sold
+                          </p>
+                          {p.revenue.usd > 0 && (
+                            <p className="text-amber-400">
+                              ${(p.revenue.usd / 100).toFixed(2)}
+                            </p>
+                          )}
+                          {p.revenue.kes > 0 && (
+                            <p className="text-gray-400">
+                              KSh {p.revenue.kes.toLocaleString("en-KE")}
+                            </p>
+                          )}
+                        </>
+                      ) : (
+                        <span className="text-gray-600">—</span>
+                      )}
                     </TableCell>
                     <TableCell className="text-right whitespace-nowrap">
                       {p.isBestSeller && (

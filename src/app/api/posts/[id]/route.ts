@@ -21,14 +21,15 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
 
   const { id } = await params;
   const body = await req.json();
+  console.log("POST PATCH BODY:", JSON.stringify(body, null, 2));
   const parsed = PostUpdateSchema.safeParse(body);
   if (!parsed.success) {
+    console.log("POST VALIDATION FAILED:", JSON.stringify(parsed.error.issues, null, 2));
     return NextResponse.json(
       { error: "Invalid input", issues: parsed.error.issues },
       { status: 400 },
     );
   }
-
   const data = parsed.data;
 
   // If publishing for the first time, set publishedAt

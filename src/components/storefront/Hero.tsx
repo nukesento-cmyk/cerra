@@ -8,17 +8,17 @@ const HEADLINE_WORDS = ["Scent,", "considered."];
 export function Hero() {
   return (
     <section className="relative min-h-[85vh] flex items-end overflow-hidden">
-      {/* Background media */}
-      <div className="absolute inset-0">
-        {/* Mobile: static image (hidden on md+) */}
+      {/* Background media — pointer-events-none so it can never swallow taps */}
+      <div className="absolute inset-0 pointer-events-none select-none">
+        {/* Mobile: static image */}
         <img
           src="/images/hero-poster.jpg"
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover md:hidden"
+          className="absolute inset-0 w-full h-full object-cover md:hidden pointer-events-none"
         />
 
-        {/* Tablet & desktop: background video (hidden below md) */}
+        {/* Tablet & desktop: background video */}
         <video
           autoPlay
           muted
@@ -26,13 +26,13 @@ export function Hero() {
           playsInline
           preload="auto"
           poster="/images/hero-poster.jpg"
-          className="absolute inset-0 w-full h-full object-cover hidden md:block"
+          className="absolute inset-0 w-full h-full object-cover hidden md:block pointer-events-none"
         >
           <source src="/videos/spray.webm" type="video/webm" />
         </video>
 
-        {/* Gradient overlay for text readability */}
-        <div className="absolute inset-0 bg-gradient-to-l from-black via-black/70 to-black/20" />
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-l from-black via-black/70 to-black/20 pointer-events-none" />
       </div>
 
       {/* Content */}
@@ -87,13 +87,13 @@ export function Hero() {
           >
             <Link
               href="/collections"
-              className="px-8 py-4 bg-amber-400 text-black font-medium tracking-wide hover:bg-amber-300 transition-colors"
+              className="px-8 py-4 bg-amber-400 text-black font-medium tracking-wide hover:bg-amber-300 transition-colors touch-manipulation"
             >
               Explore the collection
             </Link>
             <a
               href="#note-picker"
-              className="px-8 py-4 border border-amber-400/60 text-amber-400 hover:border-amber-400 hover:bg-amber-400/5 transition-colors"
+              className="px-8 py-4 border border-amber-400/60 text-amber-400 hover:border-amber-400 hover:bg-amber-400/5 transition-colors touch-manipulation"
             >
               Find your scent
             </a>

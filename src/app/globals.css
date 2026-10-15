@@ -48,7 +48,7 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-:root {
+/* :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -115,8 +115,60 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+} */
+
+
+:root,
+.theme-light {
+  --bg: oklch(0.972 0.006 85);          /* warm off-white / paper */
+  --surface: oklch(0.995 0.003 85);     /* card on paper */
+  --surface-raised: oklch(0.945 0.008 85); /* hover / rails */
+  --rail: oklch(0.958 0.007 85);        /* nav rail */
+
+  --border: oklch(0.88 0.008 85);
+  --border-strong: oklch(0.78 0.012 85);
+
+  --text: oklch(0.22 0.01 85);          /* near-ink */
+  --text-muted: oklch(0.46 0.012 85);
+  --text-faint: oklch(0.62 0.01 85);
+
+  --accent: #25402f;                    /* forest */
+  --accent-soft: color-mix(in oklch, var(--accent) 12%, transparent);
+  --accent-contrast: oklch(0.975 0.006 85);
+
+  --up: oklch(0.55 0.11 150);
+  --down: oklch(0.55 0.14 25);
 }
 
+.theme-dark {
+  --bg: oklch(0.16 0.006 80);           /* warm near-black */
+  --surface: oklch(0.192 0.007 80);
+  --surface-raised: oklch(0.225 0.008 80);
+  --rail: oklch(0.145 0.006 80);
+
+  --border: oklch(0.27 0.008 80);
+  --border-strong: oklch(0.36 0.01 80);
+
+  --text: oklch(0.955 0.005 85);
+  --text-muted: oklch(0.7 0.008 85);
+  --text-faint: oklch(0.52 0.008 85);
+
+  --accent: #3f6b52;                    /* lifted forest for dark */
+  --accent-soft: color-mix(in oklch, var(--accent) 22%, transparent);
+  --accent-contrast: oklch(0.97 0.006 85);
+
+  --up: oklch(0.72 0.12 150);
+  --down: oklch(0.72 0.14 25);
+}
+
+html { background: var(--bg); color: var(--text); }
+
+/* Font stacks — swap for your real faces */
+:root {
+  --font-ui: "Geist", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces", "Canela", ui-serif, Georgia, serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+}
 @layer base {
   * {
     @apply border-border outline-ring/50;

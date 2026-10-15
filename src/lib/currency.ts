@@ -37,3 +37,15 @@ export function effectivePrice(
   }
   return { current: product.spUsd, original: null, onSale: false };
 }
+
+export function formatMoney(amount: number, currency: "USD" | "KES"): string {
+  if (currency === "USD") return `$${(amount / 100).toFixed(2)}`;
+  return `KSh ${amount.toLocaleString("en-KE")}`;
+}
+
+export function formatMoneyPair(t: { usd: number; kes: number }): string {
+  const parts: string[] = [];
+  if (t.usd > 0) parts.push(formatMoney(t.usd, "USD"));
+  if (t.kes > 0) parts.push(formatMoney(t.kes, "KES"));
+  return parts.length ? parts.join(" · ") : "—";
+}

@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  
   const data = parsed.data;
   try {
     const row = await prisma.post.create({

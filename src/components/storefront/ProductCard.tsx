@@ -1,6 +1,11 @@
+"use client";
+
 import Link from "next/link";
-import { effectivePrice, formatPrice } from "@/lib/currency";
-import { getCurrency } from "@/lib/currency-server";
+import { ShoppingBag, Check } from "lucide-react";
+import { useState } from "react";
+import { effectivePrice, formatPrice, type Currency } from "@/lib/currency";
+import { useCart } from "./CartContext";
+
 export type ProductCardData = {
   id: string;
   slug: string;
@@ -23,15 +28,26 @@ export function ProductCard({
   currency: Currency;
   variant?: "row" | "grid";
 }) {
+  const { add } = useCart();
+  const [added, setAdded] = useState(false);
+
   const { current, original, onSale } = effectivePrice(product, currency);
 
+  function handleAdd(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    add(product.id, 1);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1500);
+  }
+
   return (
-        <Link
-        href={`/perfumes/${product.slug}`}
-        className={`group block ${
-            variant === "row" ? "w-[240px] shrink-0" : "w-full"
-        }`}
-        >
+    <Link
+      href={`/perfumes/${product.slug}`}
+      className={`group block relative ${
+        variant === "row" ? "w-[240px] shrink-0" : "w-full"
+      }`}
+    >
       <div className="relative aspect-[3/4] bg-zinc-900 rounded overflow-hidden mb-4">
         {product.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -49,6 +65,28 @@ export function ProductCard({
             Sale
           </span>
         )}
+
+        {/* Quick-add button:
+            - hidden by default, shown on group-hover (desktop)
+            - always shown on coarse pointers (mobile/touch) */}
+        <button
+          type="button"
+          onClick={handleAdd}
+          aria-label={`Add ${product.name} to cart`}
+          className={`absolute bottom-3 right-3 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200
+            ${
+              added
+                ? "bg-green-500 text-white opacity-100"
+                : "bg-amber-400 text-black hover:bg-amber-300"
+            }
+            opacity-0 translate-y-2
+            group-hover:opacity-100 group-hover:translate-y-0
+            pointer-fine:opacity-0 pointer-fine:translate-y-2 pointer-fine:group-hover:opacity-100 pointer-fine:group-hover:translate-y-0
+            pointer-coarse:opacity-100 pointer-coarse:translate-y-0
+          `}
+        >
+          {added ? <Check size={18} /> : <ShoppingBag size={18} />}
+        </button>
       </div>
 
       <div className="space-y-1">

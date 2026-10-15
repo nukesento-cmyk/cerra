@@ -19,7 +19,7 @@ export async function Navbar() {
     : null;
 
   return (
-    <header className="fixed top-0 inset-x-0 z-50 border-b border-amber-400/10 bg-black/80 backdrop-blur-md">
+    <header className="fixed top-0 inset-x-0 z-[100] isolate border-b border-amber-400/10 bg-black/95 supports-[backdrop-filter]:bg-black/80 backdrop-blur-md">
       <div className="mx-auto max-w-7xl px-6 h-16 flex items-center justify-between">
         <Link href="/" className="group inline-flex flex-col items-center">
           <span className="font-serif text-3xl md:text-4xl font-medium tracking-wide text-white hover:text-amber-400 transition-colors duration-500">
