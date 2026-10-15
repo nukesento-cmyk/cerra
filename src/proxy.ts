@@ -24,7 +24,7 @@ async function readSession(req: NextRequest): Promise<Payload | null> {
   }
 }
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Only guard /admin/*
