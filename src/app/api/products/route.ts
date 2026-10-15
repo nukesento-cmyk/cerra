@@ -39,6 +39,7 @@ const ProductInput = z.object({
   isTracked: z.boolean(),
   imageUrl: z.string().min(1).optional().nullable(),
   internalNotes: z.string().optional().nullable(),
+  
 });
 
 // ---------- GET ----------

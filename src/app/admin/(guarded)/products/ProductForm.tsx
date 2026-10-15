@@ -43,6 +43,7 @@ export type Product = {
   timeSold: string | null;
   imageUrl: string | null;
   internalNotes: string | null;
+  revenue?: { units: number; usd: number; kes: number }; 
 };
 
 export type ProductFormValues = Omit<
