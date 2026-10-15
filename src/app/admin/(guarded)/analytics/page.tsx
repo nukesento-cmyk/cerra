@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Suspense } from "react";
+import { connection } from "next/server";
 import { prisma } from "@/lib/db";
 import {
   dailyRevenue,
@@ -12,10 +14,19 @@ import {
 import { formatMoney, formatMoneyPair } from "@/lib/currency";
 import { RevenueChart } from "./RevenueChart";
 
-export const instant = false;
 export const metadata = { title: "Analytics — Cerrá Admin" };
 
-export default async function AnalyticsPage() {
+export default function AnalyticsPage() {
+  return (
+    <Suspense fallback={<AnalyticsSkeleton />}>
+      <AnalyticsContent />
+    </Suspense>
+  );
+}
+
+async function AnalyticsContent() {
+  await connection();
+
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
@@ -98,22 +109,20 @@ export default async function AnalyticsPage() {
     .sort((a, b) => b.units - a.units)
     .slice(0, 10);
 
-  // Currency totals from collection breakdown
-  const collectionTotals = byCollection.reduce(
-    (acc, row) => addToTotals(acc, "USD", row.usd),
-    emptyTotals(),
-  );
-  const collectionTotalsKes = byCollection.reduce(
-    (acc, row) => addToTotals(acc, "KES", row.kes),
-    emptyTotals(),
-  );
+  // Per-currency totals for collection bars (kept separate — do not mix)
+  const collectionTotals = byCollection.reduce((acc, row) => {
+    acc.usd += row.usd;
+    acc.kes += row.kes;
+    return acc;
+  }, { usd: 0, kes: 0 });
 
-  const avgOrder = stats.paid
-    ? {
-        usd: Math.round(allTime.usd / stats.paid),
-        kes: Math.round(allTime.kes / stats.paid),
-      }
-    : { usd: 0, kes: 0 };
+  const avgOrder =
+    stats.paid > 0
+      ? {
+          usd: Math.round(allTime.usd / stats.paid),
+          kes: Math.round(allTime.kes / stats.paid),
+        }
+      : { usd: 0, kes: 0 };
 
   return (
     <main className="mx-auto max-w-7xl px-6 py-12">
@@ -186,7 +195,7 @@ export default async function AnalyticsPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <Link
-                      href={`/admin/products`}
+                      href={`/admin/products/${p.slug}`}
                       className="text-white text-sm hover:text-amber-400 transition-colors block truncate"
                     >
                       {p.name}
@@ -227,16 +236,28 @@ export default async function AnalyticsPage() {
                       {formatMoneyPair(row)}
                     </span>
                   </div>
-                  <div className="h-1 bg-amber-400/10 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-amber-400"
-                      style={{
-                        width: `${percentOf(
-                          row.usd + row.kes,
-                          collectionTotals.usd + collectionTotalsKes.kes,
-                        )}%`,
-                      }}
-                    />
+                  {/* Two bars, one per currency — never mix USD and KES */}
+                  <div className="space-y-1">
+                    {collectionTotals.usd > 0 && (
+                      <div className="h-1 bg-amber-400/10 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-amber-400"
+                          style={{
+                            width: `${percentOf(row.usd, collectionTotals.usd)}%`,
+                          }}
+                        />
+                      </div>
+                    )}
+                    {collectionTotals.kes > 0 && (
+                      <div className="h-1 bg-amber-400/10 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-amber-400/60"
+                          style={{
+                            width: `${percentOf(row.kes, collectionTotals.kes)}%`,
+                          }}
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -292,6 +313,35 @@ export default async function AnalyticsPage() {
           </table>
         )}
       </section>
+    </main>
+  );
+}
+
+function AnalyticsSkeleton() {
+  return (
+    <main className="mx-auto max-w-7xl px-6 py-12">
+      <header className="mb-10">
+        <h1 className="text-4xl font-light mb-2">Analytics</h1>
+        <p className="text-gray-400 text-sm">
+          Revenue, orders, and product performance.
+        </p>
+      </header>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-10">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div
+            key={i}
+            className="border border-amber-400/20 rounded-lg p-5 animate-pulse"
+          >
+            <div className="h-3 w-24 bg-zinc-800 rounded mb-3" />
+            <div className="h-6 w-32 bg-zinc-800 rounded mb-2" />
+            <div className="h-3 w-20 bg-zinc-800 rounded" />
+          </div>
+        ))}
+      </div>
+      <div className="border border-amber-400/20 rounded-lg p-6 mb-10 animate-pulse">
+        <div className="h-4 w-32 bg-zinc-800 rounded mb-4" />
+        <div className="h-48 bg-zinc-900 rounded" />
+      </div>
     </main>
   );
 }
