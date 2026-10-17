@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { AuthButtons } from "@/components/storefront/AuthButtons";
 import { useCart } from "@/components/storefront/CartContext";
+import { MagneticBrandMark } from "@/components/storefront/MagneticBrandMark";
 
 export type NavUser = {
   id: string;
@@ -49,12 +50,14 @@ function CollectionsDropdown() {
 
   useEffect(() => {
     if (!open) return;
+
     function onDocClick(e: MouseEvent) {
       if (!ref.current?.contains(e.target as Node)) setOpen(false);
     }
     function onEsc(e: KeyboardEvent) {
       if (e.key === "Escape") setOpen(false);
     }
+
     document.addEventListener("mousedown", onDocClick);
     document.addEventListener("keydown", onEsc);
     return () => {
@@ -68,9 +71,9 @@ function CollectionsDropdown() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1 text-sm text-gray-300 hover:text-amber-400 transition-colors py-5 touch-manipulation"
         aria-expanded={open}
-        aria-haspopup="menu"
+        aria-controls="collections-menu"
+        className="flex items-center gap-1 text-sm text-gray-300 hover:text-amber-400 transition-colors py-5 touch-manipulation"
       >
         Perfume Collections
         <ChevronDown
@@ -81,7 +84,7 @@ function CollectionsDropdown() {
 
       {open && (
         <div
-          role="menu"
+          id="collections-menu"
           className="absolute left-0 top-full min-w-[200px] bg-zinc-900 border border-amber-400/20 rounded-md shadow-lg overflow-hidden z-[110]"
         >
           {COLLECTIONS.map((c) => (
@@ -121,79 +124,7 @@ function useLogout() {
 }
 
 /* -------------------------------------------------------------------------- */
-/*                                Desktop nav                                 */
-/* -------------------------------------------------------------------------- */
-
-export function DesktopNav({ user }: { user: NavUser }) {
-  const { logout } = useLogout();
-
-  return (
-    <nav className="hidden lg:flex items-center gap-6">
-      <Link
-        href="/"
-        className="text-sm text-gray-300 hover:text-amber-400 transition-colors"
-      >
-        Home
-      </Link>
-      <Link
-        href="/about"
-        className="text-sm text-gray-300 hover:text-amber-400 transition-colors"
-      >
-        About
-      </Link>
-      <CollectionsDropdown />
-      <Link
-        href="/blogs"
-        className="text-sm text-gray-300 hover:text-amber-400 transition-colors"
-      >
-        Blogs
-      </Link>
-      <Link
-        href="/contact"
-        className="text-sm text-gray-300 hover:text-amber-400 transition-colors"
-      >
-        Contact
-      </Link>
-
-      <span className="w-px h-5 bg-amber-400/20" />
-
-      <CartButton />
-
-      {user ? (
-        <>
-          {user.role === "admin" && (
-            <Link
-              href="/admin/dashboard"
-              className="text-sm text-amber-400 hover:text-amber-300 font-medium transition-colors"
-            >
-              Admin
-            </Link>
-          )}
-          <Link
-            href="/account"
-            className="text-sm text-gray-400 hover:text-amber-400 transition-colors"
-            title={user.email}
-          >
-            <UserIcon size={18} />
-          </Link>
-          <button
-            type="button"
-            onClick={logout}
-            className="text-gray-500 hover:text-amber-400 transition-colors"
-            aria-label="Log out"
-          >
-            <LogOut size={18} />
-          </button>
-        </>
-      ) : (
-        <AuthButtons />
-      )}
-    </nav>
-  );
-}
-
-/* -------------------------------------------------------------------------- */
-/*                          Cart button (desktop)                             */
+/*                          Cart button (shared)                              */
 /* -------------------------------------------------------------------------- */
 
 function CartButton({ mobile = false }: { mobile?: boolean }) {
@@ -246,26 +177,78 @@ function CartButton({ mobile = false }: { mobile?: boolean }) {
 }
 
 /* -------------------------------------------------------------------------- */
+/*                                Desktop nav                                 */
+/* -------------------------------------------------------------------------- */
+
+export function DesktopNav({ user }: { user: NavUser }) {
+  const { logout } = useLogout();
+
+  return (
+    <nav className="hidden lg:flex items-center gap-6">
+      {MAIN_LINKS.map((l) => (
+        <Fragment key={l.href}>
+          <Link
+            href={l.href}
+            className="text-sm text-gray-300 hover:text-amber-400 transition-colors"
+          >
+            {l.label}
+          </Link>
+          {l.href === "/about" && <CollectionsDropdown />}
+        </Fragment>
+      ))}
+
+      <span className="w-px h-5 bg-amber-400/20" />
+
+      <CartButton />
+
+      {user ? (
+        <>
+          {user.role === "admin" && (
+            <Link
+              href="/admin/dashboard"
+              className="text-sm text-amber-400 hover:text-amber-300 font-medium transition-colors"
+            >
+              Admin
+            </Link>
+          )}
+          <Link
+            href="/account"
+            className="text-sm text-gray-400 hover:text-amber-400 transition-colors"
+            title={user.email}
+          >
+            <UserIcon size={18} />
+          </Link>
+          <button
+            type="button"
+            onClick={logout}
+            className="text-gray-500 hover:text-amber-400 transition-colors"
+            aria-label="Log out"
+          >
+            <LogOut size={18} />
+          </button>
+        </>
+      ) : (
+        <AuthButtons />
+      )}
+    </nav>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
 /*                                Mobile menu                                 */
 /* -------------------------------------------------------------------------- */
 
 export function MobileMenu({ user }: { user: NavUser }) {
-  const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
   const [collectionsOpen, setCollectionsOpen] = useState(false);
   const pathname = usePathname();
   const { logout } = useLogout();
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
     setOpen(false);
     setCollectionsOpen(false);
   }, [pathname]);
 
-  // Lock body scroll while open
   useEffect(() => {
     if (!open) return;
     const prev = document.body.style.overflow;
@@ -281,22 +264,14 @@ export function MobileMenu({ user }: { user: NavUser }) {
       role="dialog"
       aria-modal="true"
     >
-      {/* Blurred backdrop */}
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-xl"
         onClick={() => setOpen(false)}
       />
 
-      {/* Panel */}
       <div className="relative h-full w-full flex flex-col">
         <div className="flex items-center justify-between px-6 h-16 border-b border-amber-400/10 bg-black/40 backdrop-blur-md">
-          <Link
-            href="/"
-            onClick={() => setOpen(false)}
-            className="text-xl font-light tracking-widest text-white"
-          >
-            CERRÁ
-          </Link>
+          <MagneticBrandMark href="/" onClick={() => setOpen(false)} />
           <button
             type="button"
             onClick={() => setOpen(false)}
@@ -323,8 +298,9 @@ export function MobileMenu({ user }: { user: NavUser }) {
             <button
               type="button"
               onClick={() => setCollectionsOpen((v) => !v)}
-              className="w-full px-6 py-4 text-lg text-gray-100 hover:text-amber-400 flex items-center justify-between transition-colors touch-manipulation"
               aria-expanded={collectionsOpen}
+              aria-controls="mobile-collections"
+              className="w-full px-6 py-4 text-lg text-gray-100 hover:text-amber-400 flex items-center justify-between transition-colors touch-manipulation"
             >
               Perfume Collections
               <ChevronDown
@@ -335,7 +311,7 @@ export function MobileMenu({ user }: { user: NavUser }) {
               />
             </button>
             {collectionsOpen && (
-              <div className="pl-4 pb-2">
+              <div id="mobile-collections" className="pl-4 pb-2">
                 {COLLECTIONS.map((c) => (
                   <Link
                     key={c.href}
@@ -400,7 +376,7 @@ export function MobileMenu({ user }: { user: NavUser }) {
       >
         <Menu size={24} />
       </button>
-      {mounted && panel ? createPortal(panel, document.body) : null}
+      {open && createPortal(panel, document.body)}
     </>
   );
 }
