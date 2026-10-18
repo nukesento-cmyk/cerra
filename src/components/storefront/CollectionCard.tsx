@@ -6,12 +6,21 @@ export function CollectionCard({
   tagline,
   image,
   href,
+  spKes,
+  spUsd,
+  salePriceKes,
+  salePriceUsd,
+
 }: {
   slug: string;
   name: string;
   tagline: string;
   image: string;
   href: string;
+  spKes: number;
+  spUsd: number;
+  salePriceKes: number | null;
+  salePriceUsd: number | null;
 }) {
   return (
     <Link
@@ -28,6 +37,7 @@ export function CollectionCard({
       <div className="absolute bottom-0 left-0 right-0 p-6">
         <h3 className="text-2xl font-light text-white mb-1">{name}</h3>
         <p className="text-gray-300 text-sm">{tagline}</p>
+        
       </div>
     </Link>
   );

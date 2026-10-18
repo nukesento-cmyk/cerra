@@ -2,7 +2,9 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { ShoppingBag, Check } from "lucide-react";
 import { effectivePrice, formatPrice, type Currency } from "@/lib/currency";
+import { useCart } from "./CartContext";
 
 export type ExplorerProduct = {
   id: string;
@@ -15,7 +17,7 @@ export type ExplorerProduct = {
   salePriceKes: number | null;
   salePriceUsd: number | null;
   isOnOffer: boolean;
-  notes: string[];   // parsed server-side
+  notes: string[];
 };
 
 export function NoteExplorer({
@@ -31,10 +33,7 @@ export function NoteExplorer({
 
   const filtered = useMemo(() => {
     if (selected.length === 0) return products;
-    return products.filter((p) =>
-      // AND semantics: every selected note must be present
-      selected.every((n) => p.notes.includes(n)),
-    );
+    return products.filter((p) => selected.every((n) => p.notes.includes(n)));
   }, [products, selected]);
 
   function toggle(note: string) {
@@ -96,9 +95,7 @@ export function NoteExplorer({
 
       {filtered.length === 0 ? (
         <div className="border border-amber-400/10 rounded-lg p-16 text-center max-w-2xl mx-auto">
-          <p className="text-gray-400 mb-4">
-            No perfumes match those notes.
-          </p>
+          <p className="text-gray-400 mb-4">No perfumes match those notes.</p>
           <button
             onClick={clear}
             className="text-amber-400 hover:text-amber-300 text-sm"
@@ -124,13 +121,24 @@ function ExplorerCard({
   product: ExplorerProduct;
   currency: Currency;
 }) {
+  const { add } = useCart();
+  const [added, setAdded] = useState(false);
+
   const { current, original, onSale } = effectivePrice(product, currency);
   const shownNotes = product.notes.slice(0, 3);
+
+  function handleAdd(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    add(product.id, 1);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1500);
+  }
 
   return (
     <Link
       href={`/perfumes/${product.slug}`}
-      className="group block border border-transparent hover:border-amber-400/40 rounded overflow-hidden transition-all duration-300 hover:scale-[1.02]"
+      className="group block border border-transparent hover:border-amber-400/40 rounded overflow-hidden transition-all duration-300 hover:scale-[1.02] relative"
     >
       <div className="relative aspect-square bg-zinc-900 overflow-hidden">
         {product.imageUrl ? (
@@ -148,6 +156,25 @@ function ExplorerCard({
             Sale
           </span>
         )}
+
+        {/* Quick-add button: hover on desktop, always visible on touch */}
+        <button
+          type="button"
+          onClick={handleAdd}
+          aria-label={`Add ${product.name} to cart`}
+          className={`absolute bottom-3 right-3 w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all duration-200
+            ${
+              added
+                ? "bg-green-500 text-white opacity-100"
+                : "bg-amber-400 text-black hover:bg-amber-300"
+            }
+            opacity-0 translate-y-2
+            group-hover:opacity-100 group-hover:translate-y-0
+            pointer-coarse:opacity-100 pointer-coarse:translate-y-0
+          `}
+        >
+          {added ? <Check size={18} /> : <ShoppingBag size={18} />}
+        </button>
       </div>
 
       <div className="p-4">

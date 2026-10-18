@@ -36,6 +36,20 @@ const MAIN_LINKS = [
 ];
 
 /* -------------------------------------------------------------------------- */
+/*                              Active helper                                 */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Returns true when `href` matches the current path.
+ * - "/" only matches exactly (so it doesn't stay active everywhere).
+ * - Other hrefs match exactly OR as a parent of a nested route.
+ */
+function isActivePath(pathname: string, href: string) {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+/* -------------------------------------------------------------------------- */
 /*                            Collections dropdown                            */
 /* -------------------------------------------------------------------------- */
 
@@ -43,6 +57,11 @@ function CollectionsDropdown() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
+
+  const collectionsActive = COLLECTIONS.some((c) =>
+    isActivePath(pathname, c.href)
+  );
+  const allActive = isActivePath(pathname, "/collections");
 
   useEffect(() => {
     setOpen(false);
@@ -73,12 +92,23 @@ function CollectionsDropdown() {
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-controls="collections-menu"
-        className="flex items-center gap-1 text-sm text-gray-300 hover:text-amber-400 transition-colors py-5 touch-manipulation"
+        className={`relative flex items-center gap-1 text-sm transition-colors py-5 touch-manipulation ${
+          collectionsActive
+            ? "text-amber-400"
+            : "text-gray-300 hover:text-amber-400"
+        }`}
       >
         Perfume Collections
         <ChevronDown
           size={14}
           className={`transition-transform ${open ? "rotate-180" : ""}`}
+        />
+        {/* Active underline */}
+        <span
+          aria-hidden
+          className={`pointer-events-none absolute left-0 right-0 -bottom-0 h-px bg-amber-400 transition-all duration-300 ${
+            collectionsActive ? "opacity-100 w-full" : "opacity-0 w-0"
+          }`}
         />
       </button>
 
@@ -87,18 +117,31 @@ function CollectionsDropdown() {
           id="collections-menu"
           className="absolute left-0 top-full min-w-[200px] bg-zinc-900 border border-amber-400/20 rounded-md shadow-lg overflow-hidden z-[110]"
         >
-          {COLLECTIONS.map((c) => (
-            <Link
-              key={c.href}
-              href={c.href}
-              className="block px-4 py-3 text-sm text-gray-300 hover:bg-amber-400/10 hover:text-amber-400 transition-colors"
-            >
-              {c.label}
-            </Link>
-          ))}
+          {COLLECTIONS.map((c) => {
+            const active = isActivePath(pathname, c.href);
+            return (
+              <Link
+                key={c.href}
+                href={c.href}
+                aria-current={active ? "page" : undefined}
+                className={`block px-4 py-3 text-sm transition-colors ${
+                  active
+                    ? "text-amber-400 bg-amber-400/10 border-l-2 border-amber-400"
+                    : "text-gray-300 hover:bg-amber-400/10 hover:text-amber-400"
+                }`}
+              >
+                {c.label}
+              </Link>
+            );
+          })}
           <Link
             href="/collections"
-            className="block px-4 py-3 text-sm text-amber-400 hover:bg-amber-400/10 border-t border-amber-400/10 transition-colors"
+            aria-current={allActive ? "page" : undefined}
+            className={`block px-4 py-3 text-sm transition-colors border-t border-amber-400/10 ${
+              allActive
+                ? "text-amber-400 bg-amber-400/10"
+                : "text-amber-400 hover:bg-amber-400/10"
+            }`}
           >
             All collections →
           </Link>
@@ -127,14 +170,19 @@ function useLogout() {
 /*                          Cart button (shared)                              */
 /* -------------------------------------------------------------------------- */
 
-function CartButton({ mobile = false }: { mobile?: boolean }) {
+export function CartButton({ mobile = false }: { mobile?: boolean }) {
   const { count } = useCart();
+  const pathname = usePathname();
+  const active = isActivePath(pathname, "/cart");
 
   if (mobile) {
     return (
       <Link
         href="/cart"
-        className="flex items-center justify-between w-full text-lg text-gray-100 hover:text-amber-400 transition-colors"
+        aria-current={active ? "page" : undefined}
+        className={`flex items-center justify-between w-full text-lg transition-colors ${
+          active ? "text-amber-400" : "text-gray-100 hover:text-amber-400"
+        }`}
       >
         <span>Cart</span>
         {count > 0 && (
@@ -149,8 +197,11 @@ function CartButton({ mobile = false }: { mobile?: boolean }) {
   return (
     <Link
       href="/cart"
-      className="relative text-gray-300 hover:text-amber-400 transition-colors"
       aria-label="Cart"
+      aria-current={active ? "page" : undefined}
+      className={`relative transition-colors ${
+        active ? "text-amber-400" : "text-gray-300 hover:text-amber-400"
+      }`}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -182,20 +233,36 @@ function CartButton({ mobile = false }: { mobile?: boolean }) {
 
 export function DesktopNav({ user }: { user: NavUser }) {
   const { logout } = useLogout();
+  const pathname = usePathname();
 
   return (
     <nav className="hidden lg:flex items-center gap-6">
-      {MAIN_LINKS.map((l) => (
-        <Fragment key={l.href}>
-          <Link
-            href={l.href}
-            className="text-sm text-gray-300 hover:text-amber-400 transition-colors"
-          >
-            {l.label}
-          </Link>
-          {l.href === "/about" && <CollectionsDropdown />}
-        </Fragment>
-      ))}
+      {MAIN_LINKS.map((l) => {
+        const active = isActivePath(pathname, l.href);
+        return (
+          <Fragment key={l.href}>
+            <Link
+              href={l.href}
+              aria-current={active ? "page" : undefined}
+              className={`relative text-sm transition-colors ${
+                active
+                  ? "text-amber-400"
+                  : "text-gray-300 hover:text-amber-400"
+              }`}
+            >
+              {l.label}
+              {/* Active underline */}
+              <span
+                aria-hidden
+                className={`pointer-events-none absolute left-0 right-0 -bottom-1 h-px bg-amber-400 transition-all duration-300 ${
+                  active ? "opacity-100 w-full" : "opacity-0 w-0"
+                }`}
+              />
+            </Link>
+            {l.href === "/about" && <CollectionsDropdown />}
+          </Fragment>
+        );
+      })}
 
       <span className="w-px h-5 bg-amber-400/20" />
 
@@ -203,18 +270,17 @@ export function DesktopNav({ user }: { user: NavUser }) {
 
       {user ? (
         <>
-          {user.role === "admin" && (
-            <Link
-              href="/admin/dashboard"
-              className="text-sm text-amber-400 hover:text-amber-300 font-medium transition-colors"
-            >
-              Admin
-            </Link>
-          )}
           <Link
             href="/account"
-            className="text-sm text-gray-400 hover:text-amber-400 transition-colors"
             title={user.email}
+            aria-current={
+              isActivePath(pathname, "/account") ? "page" : undefined
+            }
+            className={`text-sm transition-colors ${
+              isActivePath(pathname, "/account")
+                ? "text-amber-400"
+                : "text-gray-400 hover:text-amber-400"
+            }`}
           >
             <UserIcon size={18} />
           </Link>
@@ -243,6 +309,10 @@ export function MobileMenu({ user }: { user: NavUser }) {
   const [collectionsOpen, setCollectionsOpen] = useState(false);
   const pathname = usePathname();
   const { logout } = useLogout();
+
+  const collectionsActive = COLLECTIONS.some((c) =>
+    isActivePath(pathname, c.href)
+  );
 
   useEffect(() => {
     setOpen(false);
@@ -283,16 +353,24 @@ export function MobileMenu({ user }: { user: NavUser }) {
         </div>
 
         <nav className="flex-1 overflow-y-auto py-4 bg-black/30 backdrop-blur-md">
-          {MAIN_LINKS.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              onClick={() => setOpen(false)}
-              className="px-6 py-4 text-lg text-gray-100 hover:text-amber-400 border-b border-amber-400/5 transition-colors block"
-            >
-              {l.label}
-            </Link>
-          ))}
+          {MAIN_LINKS.map((l) => {
+            const active = isActivePath(pathname, l.href);
+            return (
+              <Link
+                key={l.href}
+                href={l.href}
+                onClick={() => setOpen(false)}
+                aria-current={active ? "page" : undefined}
+                className={`px-6 py-4 text-lg border-b border-amber-400/5 transition-colors block border-l-2 ${
+                  active
+                    ? "text-amber-400 border-l-amber-400 bg-amber-400/5"
+                    : "text-gray-100 hover:text-amber-400 border-l-transparent"
+                }`}
+              >
+                {l.label}
+              </Link>
+            );
+          })}
 
           <div className="border-b border-amber-400/5">
             <button
@@ -300,7 +378,11 @@ export function MobileMenu({ user }: { user: NavUser }) {
               onClick={() => setCollectionsOpen((v) => !v)}
               aria-expanded={collectionsOpen}
               aria-controls="mobile-collections"
-              className="w-full px-6 py-4 text-lg text-gray-100 hover:text-amber-400 flex items-center justify-between transition-colors touch-manipulation"
+              className={`w-full px-6 py-4 text-lg flex items-center justify-between transition-colors touch-manipulation border-l-2 ${
+                collectionsActive
+                  ? "text-amber-400 border-l-amber-400 bg-amber-400/5"
+                  : "text-gray-100 hover:text-amber-400 border-l-transparent"
+              }`}
             >
               Perfume Collections
               <ChevronDown
@@ -312,39 +394,57 @@ export function MobileMenu({ user }: { user: NavUser }) {
             </button>
             {collectionsOpen && (
               <div id="mobile-collections" className="pl-4 pb-2">
-                {COLLECTIONS.map((c) => (
-                  <Link
-                    key={c.href}
-                    href={c.href}
-                    onClick={() => setOpen(false)}
-                    className="block px-6 py-3 text-base text-gray-300 hover:text-amber-400 transition-colors"
-                  >
-                    {c.label}
-                  </Link>
-                ))}
+                {COLLECTIONS.map((c) => {
+                  const active = isActivePath(pathname, c.href);
+                  return (
+                    <Link
+                      key={c.href}
+                      href={c.href}
+                      onClick={() => setOpen(false)}
+                      aria-current={active ? "page" : undefined}
+                      className={`block px-6 py-3 text-base transition-colors border-l-2 ${
+                        active
+                          ? "text-amber-400 border-l-amber-400"
+                          : "text-gray-300 hover:text-amber-400 border-l-transparent"
+                      }`}
+                    >
+                      {c.label}
+                    </Link>
+                  );
+                })}
+                <Link
+                  href="/collections"
+                  onClick={() => setOpen(false)}
+                  aria-current={
+                    isActivePath(pathname, "/collections")
+                      ? "page"
+                      : undefined
+                  }
+                  className={`block px-6 py-3 text-base transition-colors border-l-2 ${
+                    isActivePath(pathname, "/collections")
+                      ? "text-amber-400 border-l-amber-400"
+                      : "text-amber-400 hover:text-amber-300 border-l-transparent"
+                  }`}
+                >
+                  All collections →
+                </Link>
               </div>
             )}
           </div>
 
-          <div className="px-6 py-4 border-b border-amber-400/5">
-            <CartButton mobile />
-          </div>
-
           {user ? (
             <>
-              {user.role === "admin" && (
-                <Link
-                  href="/admin/dashboard"
-                  onClick={() => setOpen(false)}
-                  className="block px-6 py-4 text-lg text-amber-400 border-b border-amber-400/5 transition-colors"
-                >
-                  Admin
-                </Link>
-              )}
               <Link
                 href="/account"
                 onClick={() => setOpen(false)}
-                className="block px-6 py-4 text-lg text-gray-100 hover:text-amber-400 border-b border-amber-400/5 transition-colors"
+                aria-current={
+                  isActivePath(pathname, "/account") ? "page" : undefined
+                }
+                className={`block px-6 py-4 text-lg border-b border-amber-400/5 transition-colors border-l-2 ${
+                  isActivePath(pathname, "/account")
+                    ? "text-amber-400 border-l-amber-400 bg-amber-400/5"
+                    : "text-gray-100 hover:text-amber-400 border-l-transparent"
+                }`}
               >
                 Account
               </Link>

@@ -45,10 +45,10 @@ export function ProductCard({
     <Link
       href={`/perfumes/${product.slug}`}
       className={`group block relative ${
-        variant === "row" ? "w-[240px] shrink-0" : "w-full"
+        variant === "row" ? "w-[160px] sm:w-[200px] md:w-[240px] shrink-0" : "w-full"
       }`}
     >
-      <div className="relative aspect-[3/4] bg-zinc-900 rounded overflow-hidden mb-4">
+      <div className="relative aspect-[3/4] bg-zinc-900 rounded overflow-hidden mb-2 sm:mb-4">
         {product.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -61,7 +61,7 @@ export function ProductCard({
         )}
 
         {onSale && (
-          <span className="absolute top-3 left-3 px-2 py-1 bg-red-500 text-white text-[10px] uppercase tracking-wider font-medium">
+          <span className="absolute top-2 left-2 sm:top-3 sm:left-3 px-1.5 py-0.5 sm:px-2 sm:py-1 bg-red-500 text-white text-[9px] sm:text-[10px] uppercase tracking-wider font-medium">
             Sale
           </span>
         )}
@@ -73,7 +73,7 @@ export function ProductCard({
           type="button"
           onClick={handleAdd}
           aria-label={`Add ${product.name} to cart`}
-          className={`absolute bottom-3 right-3 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200
+          className={`absolute bottom-2 right-2 sm:bottom-3 sm:right-3 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all duration-200
             ${
               added
                 ? "bg-green-500 text-white opacity-100"
@@ -85,23 +85,24 @@ export function ProductCard({
             pointer-coarse:opacity-100 pointer-coarse:translate-y-0
           `}
         >
-          {added ? <Check size={18} /> : <ShoppingBag size={18} />}
+          {added ? <Check size={16} className="sm:hidden" /> : <ShoppingBag size={16} className="sm:hidden" />}
+          {added ? <Check size={18} className="hidden sm:block" /> : <ShoppingBag size={18} className="hidden sm:block" />}
         </button>
       </div>
 
-      <div className="space-y-1">
-        <p className="text-xs uppercase tracking-wider text-gray-500">
+      <div className="space-y-0.5 sm:space-y-1">
+        <p className="text-[10px] sm:text-xs uppercase tracking-wider text-gray-500 truncate">
           {product.collection}
         </p>
-        <h3 className="text-white font-light truncate group-hover:text-amber-400 transition-colors">
+        <h3 className="text-sm sm:text-base text-white font-light truncate group-hover:text-amber-400 transition-colors">
           {product.name}
         </h3>
-        <div className="flex items-baseline gap-2">
-          <span className="text-amber-400 text-sm">
+        <div className="flex items-baseline gap-1.5 sm:gap-2 flex-wrap">
+          <span className="text-amber-400 text-xs sm:text-sm">
             {formatPrice(current, currency)}
           </span>
           {onSale && original != null && (
-            <span className="text-gray-500 text-xs line-through">
+            <span className="text-gray-500 text-[10px] sm:text-xs line-through">
               {formatPrice(original, currency)}
             </span>
           )}

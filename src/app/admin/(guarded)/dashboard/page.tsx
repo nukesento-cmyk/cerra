@@ -92,7 +92,7 @@ export default async function AdminDashboard() {
           <Stat
             label="Orders"
             value={orderCount.toLocaleString()}
-            href="/admin/dashboard"
+            href="/admin/orders"
             hint="All-time orders"
           />
           <Stat

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getSession } from "@/lib/auth/session";
 import {
+  CartButton,
   DesktopNav,
   MobileMenu,
   type NavUser,
@@ -62,8 +63,14 @@ export async function Navbar() {
           />
         </Link>
 
+        {/* ---------- Desktop nav (hidden below lg) ---------- */}
         <DesktopNav user={user} />
-        <MobileMenu user={user} />
+
+        {/* ---------- Mobile cluster: cart icon + hamburger ---------- */}
+        <div className="flex items-center gap-3 lg:hidden">
+          <CartButton />
+          <MobileMenu user={user} />
+        </div>
       </div>
     </header>
   );
