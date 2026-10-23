@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
+import { put } from "@vercel/blob";
 import { requireAdmin } from "@/lib/auth/session";
 
 const MAX_BYTES = 5 * 1024 * 1024; // 5MB
@@ -35,15 +34,12 @@ export async function POST(req: NextRequest) {
   }
 
   const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
-  const filename = `${crypto.randomUUID()}.${ext}`;
+  const key = `products/${crypto.randomUUID()}.${ext}`;
 
-  const uploadDir = path.join(process.cwd(), "public", "uploads", "products");
-  await mkdir(uploadDir, { recursive: true });
+  const blob = await put(key, file, {
+    access: "public",
+    contentType: file.type,
+  });
 
-  const buffer = Buffer.from(await file.arrayBuffer());
-  await writeFile(path.join(uploadDir, filename), buffer);
-
-  const url = `/uploads/products/${filename}`;
-
-  return NextResponse.json({ url });
+  return NextResponse.json({ url: blob.url });
 }

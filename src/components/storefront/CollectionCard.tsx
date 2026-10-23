@@ -6,10 +6,10 @@ export function CollectionCard({
   tagline,
   image,
   href,
-  spKes,
-  spUsd,
-  salePriceKes,
-  salePriceUsd,
+  // spKes,
+  // spUsd,
+  // salePriceKes,
+  // salePriceUsd,
 
 }: {
   slug: string;
@@ -17,10 +17,10 @@ export function CollectionCard({
   tagline: string;
   image: string;
   href: string;
-  spKes: number;
-  spUsd: number;
-  salePriceKes: number | null;
-  salePriceUsd: number | null;
+  // spKes: number;
+  // spUsd: number;
+  // salePriceKes: number | null;
+  // salePriceUsd: number | null;
 }) {
   return (
     <Link
